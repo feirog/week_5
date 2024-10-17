@@ -1,0 +1,5 @@
+"0","data1 = read.csv(""https://www.opendata.nhs.scot/dataset/unintentional-injuries/resource/aee43295-2a13-48f6-bf05-92769ca7c6cf.csv"")
+"
+"2","Error in file(file, ""rt"") : 
+  cannot open the connection to 'https://www.opendata.nhs.scot/dataset/unintentional-injuries/resource/aee43295-2a13-48f6-bf05-92769ca7c6cf.csv'
+"

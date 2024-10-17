@@ -1,0 +1,102 @@
+---
+title: "Hospital Length of Stays"
+author: "Keith Douglas"
+date: "2024-10-15"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(NHSRdatasets)
+library(knitr)
+library(kableExtra)
+```
+
+# Load the data from the package
+```{r}
+data("LOS_model")
+?LOS_model
+```
+
+# Inspect
+```{r}
+summary(LOS_model)
+
+```
+
+
+# Make Death a factor
+```{r}
+LOS_model$Death = as.factor(LOS_model$Death)
+```
+
+
+# Recode Death levels
+```{r}
+mut_df = LOS_model %>% 
+  mutate(Death = Death %>% 
+           fct_recode("Survived" = "0", "Died" = "1"))
+```
+
+
+# Create a summary table where each combination of Organisation and Death gets a count (n).
+```{r}
+# table(mut_df$Organisation, mut_df$Death)
+
+summ_df = mut_df %>% 
+  group_by(Organisation, Death) %>% 
+  tally()
+```
+
+# Make a wide table with Dead and Survived as rows with a column for each Trust
+```{r}
+# t(table(mut_df$Organisation, mut_df$Death))
+
+wide_df = summ_df %>% 
+  pivot_wider(names_from = Organisation,
+               values_from = n)
+```
+
+# Another pivot with Survived and Died as columns, Trusts as rows.
+# Also calculate the % survived for each Trust
+```{r}
+perc_df = summ_df %>% 
+  pivot_wider(
+    names_from = Death,
+    values_from = n
+  ) %>% 
+  mutate(Total = Survived + Died,
+         Percent_Survived = (Survived / Total) * 100) %>% 
+  mutate(Organisation = Organisation %>% 
+           fct_recode("Trust 1" = "Trust1", "Trust 2" = "Trust2", "Trust 3" = "Trust3", "Trust 4" = "Trust4", "Trust 5" = "Trust5", "Trust 6" = "Trust6", "Trust 7" = "Trust7", "Trust 8" = "Trust8", "Trust 9" = "Trust9", "Trust 10" = "Trust10"))
+```
+
+
+# Make the wide table pretty with kable()
+```{r}
+
+perc_df %>% 
+  kable(
+    col.names = c("Trust", "Survived", "Died", "Total", "Survived (%)"),
+    digits = 0, # Rounding up stuff
+    caption = "Hospital Length of Stays data: Percent Survived by Trust",
+    align = "lcccc"
+    ) #%>% 
+  #kable_styling(
+   # "striped",
+    #full_width = FALSE
+  #) %>% 
+  #footnote("Data from LOS_model")
+# kableExtra stuff usually doesn't knit well to pdf
+```
+
+
+# Let's knit to PDF
+
+
